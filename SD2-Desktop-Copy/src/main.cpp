@@ -893,21 +893,21 @@ void digitalClockDisplay(int reflash_en = 0) {
   int now_second = second(); // 获取秒针
   // 小时刷新
   if ((now_hour != Hour_sign) || (reflash_en == 1)) {
-    drawLineFont(20, timeY, now_hour / 10, 3, SD_FONT_WHITE);
-    drawLineFont(60, timeY, now_hour % 10, 3, SD_FONT_WHITE);
+    drawLineFont(20, timeY, now_hour / 10, 3, FONT_COLOR_HOUR);
+    drawLineFont(60, timeY, now_hour % 10, 3, FONT_COLOR_HOUR);
     Hour_sign = now_hour;
   }
   // 分钟刷新
   if ((now_minute != Minute_sign) || (reflash_en == 1)) {
-    drawLineFont(101, timeY, now_minute / 10, 3, SD_FONT_YELLOW);
-    drawLineFont(141, timeY, now_minute % 10, 3, SD_FONT_YELLOW);
+    drawLineFont(101, timeY, now_minute / 10, 3, FONT_COLOR_MIN);
+    drawLineFont(141, timeY, now_minute % 10, 3, FONT_COLOR_MIN);
     Minute_sign = now_minute;
   }
   // 秒针刷新
   // 分钟刷新
   if ((now_second != Second_sign) || (reflash_en == 1)) {
-    drawLineFont(182, timeY + 30, now_second / 10, 2, SD_FONT_WHITE);
-    drawLineFont(202, timeY + 30, now_second % 10, 2, SD_FONT_WHITE);
+    drawLineFont(182, timeY + 30, now_second / 10, 2, FONT_COLOR_SEC);
+    drawLineFont(202, timeY + 30, now_second % 10, 2, FONT_COLOR_SEC);
     Second_sign = now_second;
   }
 
