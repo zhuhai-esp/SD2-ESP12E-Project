@@ -76,9 +76,6 @@ Thread reflash_Animate = Thread();
 StaticThreadController<4> controller(&reflash_time, &reflash_Banner,
                                      &reflash_openWifi, &reflash_Animate);
 
-// 联网后所有需要更新的数据
-Thread WIFI_reflash = Thread();
-
 /* *****************************************************************
  *  参数设置
  * *****************************************************************/
@@ -1066,6 +1063,8 @@ void setup() {
   }
 
   pinMode(TFT_BL, OUTPUT);
+  analogWriteResolution(10);
+  analogWriteFreq(25000);
   analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
 
   tft.begin();          /* TFT init */
