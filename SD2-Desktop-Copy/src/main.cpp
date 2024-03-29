@@ -181,10 +181,8 @@ byte loadNum = 6;
 // 绘制进度条
 void loading(byte delayTime) {
   clk.setColorDepth(8);
-
-  clk.createSprite(200, 100); // 创建窗口
-  clk.fillSprite(0x0000);     // 填充率
-
+  clk.createSprite(200, 100);                      // 创建窗口
+  clk.fillSprite(0x0000);                          // 填充率
   clk.drawRoundRect(0, 0, 200, 16, 8, 0xFFFF);     // 空心圆角矩形
   clk.fillRoundRect(3, 3, loadNum, 10, 5, 0xFFFF); // 实心圆角矩形
   clk.setTextDatum(CC_DATUM);                      // 设置文本数据
@@ -193,11 +191,6 @@ void loading(byte delayTime) {
   clk.setTextColor(TFT_WHITE, 0x0000);
   clk.drawRightString(Version, 180, 60, 2);
   clk.pushSprite(20, 120); // 窗口位置
-
-  // clk.setTextDatum(CC_DATUM);
-  // clk.setTextColor(TFT_WHITE, 0x0000);
-  // clk.pushSprite(130,180);
-
   clk.deleteSprite();
   loadNum += 1;
   delay(delayTime);
@@ -206,13 +199,11 @@ void loading(byte delayTime) {
 // 湿度图标显示函数
 void humidityWin() {
   clk.setColorDepth(8);
-
   huminum = huminum / 2;
   clk.createSprite(52, 6); // 创建窗口
   clk.fillSprite(0x0000);  // 填充率
-  clk.drawRoundRect(
-      0, 0, 52, 6, 3,
-      0xFFFF); // 空心圆角矩形  起始位x,y,长度，宽度，圆弧半径，颜色
+  // 空心圆角矩形  起始位x,y,长度，宽度，圆弧半径，颜色
+  clk.drawRoundRect(0, 0, 52, 6, 3, 0xFFFF);
   clk.fillRoundRect(1, 1, huminum, 4, 2, humicol); // 实心圆角矩形
   clk.pushSprite(45, 222);                         // 窗口位置
   clk.deleteSprite();
@@ -221,12 +212,10 @@ void humidityWin() {
 // 温度图标显示函数
 void tempWin() {
   clk.setColorDepth(8);
-
   clk.createSprite(52, 6); // 创建窗口
   clk.fillSprite(0x0000);  // 填充率
-  clk.drawRoundRect(
-      0, 0, 52, 6, 3,
-      0xFFFF); // 空心圆角矩形  起始位x,y,长度，宽度，圆弧半径，颜色
+  // 空心圆角矩形  起始位x,y,长度，宽度，圆弧半径，颜色
+  clk.drawRoundRect(0, 0, 52, 6, 3, 0xFFFF);
   clk.fillRoundRect(1, 1, tempnum, 4, 2, tempcol); // 实心圆角矩形
   clk.pushSprite(45, 192);                         // 窗口位置
   clk.deleteSprite();
@@ -260,15 +249,14 @@ void Serial_set() {
   if (Serial.available() > 0) {
     // 监测串口缓存，当有数据输入时，循环赋值给incomingByte
     while (Serial.available() > 0) {
-      incomingByte += char(
-          Serial
-              .read()); // 读取单个字符值，转换为字符，并按顺序一个个赋值给incomingByte
+      // 读取单个字符值，转换为字符，并按顺序一个个赋值给incomingByte
+      incomingByte += char(Serial.read());
       delay(2); // 不能省略，因为读取缓冲区数据需要时间
     }
     // 设置1亮度设置
     if (SMOD == "0x01") {
-      int LCDBL =
-          atoi(incomingByte.c_str()); // int n = atoi(xxx.c_str());//String转int
+      // int n = atoi(xxx.c_str());//String转int
+      int LCDBL = atoi(incomingByte.c_str());
       if (LCDBL >= 0 && LCDBL <= 100) {
         EEPROM.write(BL_addr, LCDBL); // 亮度地址写入亮度值
         EEPROM.commit();              // 保存更改的数据
@@ -286,8 +274,8 @@ void Serial_set() {
     // 设置2地址设置
     if (SMOD == "0x02") {
       int CityCODE = 0;
-      int CityC =
-          atoi(incomingByte.c_str()); // int n = atoi(xxx.c_str());//String转int
+      // int n = atoi(xxx.c_str());//String转int
+      int CityC = atoi(incomingByte.c_str());
       if (((CityC >= 101000000) && (CityC <= 102000000)) || (CityC == 0)) {
         for (int cnum = 0; cnum < 5; cnum++) {
           EEPROM.write(CC_addr + cnum, CityC % 100); // 城市地址写入城市代码
@@ -300,9 +288,7 @@ void Serial_set() {
           CityCODE += EEPROM.read(CC_addr + cnum - 1);
           delay(5);
         }
-
         cityCode = CityCODE;
-
         if (cityCode == "0") {
           Serial.println("城市代码调整为：自动");
           getCityCode(); // 获取城市代码
@@ -396,10 +382,8 @@ void Serial_set() {
 // WEB配网LCD显示函数
 void Web_win() {
   clk.setColorDepth(8);
-
-  clk.createSprite(200, 60); // 创建窗口
-  clk.fillSprite(0x0000);    // 填充率
-
+  clk.createSprite(200, 60);  // 创建窗口
+  clk.fillSprite(0x0000);     // 填充率
   clk.setTextDatum(CC_DATUM); // 设置文本数据
   clk.setTextColor(TFT_GREEN, 0x0000);
   clk.drawString("WiFi Connect Fail!", 100, 10, 2);
@@ -407,14 +391,12 @@ void Web_win() {
   clk.setTextColor(TFT_WHITE, 0x0000);
   clk.drawString("AutoConnectAP", 125, 40, 2);
   clk.pushSprite(20, 50); // 窗口位置
-
   clk.deleteSprite();
 }
 
 // WEB配网函数
 void Webconfig() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-
   delay(3000);
   wm.resetSettings(); // wipe settings
 
@@ -440,10 +422,10 @@ void Webconfig() {
 
   const char *set_rotation =
       "<br/><label for='set_rotation'>显示方向设置</label>\
-                              <input type='radio' name='set_rotation' value='0' checked> USB接口朝下<br>\
-                              <input type='radio' name='set_rotation' value='1'> USB接口朝右<br>\
-                              <input type='radio' name='set_rotation' value='2'> USB接口朝上<br>\
-                              <input type='radio' name='set_rotation' value='3'> USB接口朝左<br>";
+      <input type='radio' name='set_rotation' value='0' checked> USB接口朝下<br>\
+      <input type='radio' name='set_rotation' value='1'> USB接口朝右<br>\
+      <input type='radio' name='set_rotation' value='2'> USB接口朝上<br>\
+      <input type='radio' name='set_rotation' value='3'> USB接口朝左<br>";
   WiFiManagerParameter custom_rot(set_rotation); // custom html input
   WiFiManagerParameter custom_bl("LCDBL", "屏幕亮度（1-100）", "10", 3);
   WiFiManagerParameter custom_weatertime("WeaterUpdateTime",
@@ -490,8 +472,8 @@ void Webconfig() {
 
   // wifi scan settings
   // wm.setRemoveDuplicateAPs(false); // do not remove duplicate ap names (true)
-  wm.setMinimumSignalQuality(
-      20); // set min RSSI (percentage) to show in scans, null = 8%
+  // set min RSSI (percentage) to show in scans, null = 8%
+  wm.setMinimumSignalQuality(20);
   // wm.setShowInfoErase(false);      // do not show erase button on info page
   // wm.setScanDispPerc(true);       // show RSSI as percentage not graph icons
 
