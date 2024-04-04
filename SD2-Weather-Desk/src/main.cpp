@@ -6,13 +6,8 @@ void setup() {
   startWifiConfig();
   startConfigTime();
   setupOTAConfig();
+  setupJPEG();
   setupTasks();
-  setupInitApi();
-  controller.run();
 }
 
-void loop() {
-  if (controller.shouldRun()) {
-    controller.run();
-  }
-}
+void loop() { handleLoop(); }

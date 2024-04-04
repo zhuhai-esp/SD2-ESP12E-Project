@@ -27,6 +27,9 @@ inline String get_location_info() {
 */
 inline json get_cur_city_info() {
   String ip_info = get_location_info();
+  if (ip_info.isEmpty()) {
+    return NULL;
+  }
   HTTPClient http;
   http.begin(wifiClient, "http://data.weatherat.com/location/getCityId");
   http.addHeader("Content-Type", "application/json");
