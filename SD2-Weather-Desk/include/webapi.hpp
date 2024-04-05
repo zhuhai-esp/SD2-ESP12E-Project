@@ -17,8 +17,11 @@ inline String get_location_info() {
   HTTPClient http;
   http.begin(wifiClient, "http://data.weatherat.com/live/ip");
   if (http.GET() > 0) {
-    return http.getString();
+    auto ret = http.getString();
+    http.end();
+    return ret;
   }
+  http.end();
   return "";
 }
 
@@ -36,8 +39,10 @@ inline json get_cur_city_info() {
   if (http.POST(ip_info) > 0) {
     json js_obj = json::parse(http.getString());
     js_obj["ip"] = json::parse(ip_info);
+    http.end();
     return js_obj;
   }
+  http.end();
   return 0;
 }
 
@@ -50,8 +55,11 @@ inline json get_city_weather_info(int cityId) {
   url.concat(cityId);
   http.begin(wifiClient, url);
   if (http.GET() > 0) {
-    return json::parse(http.getString())["data"];
+    auto jsObj = json::parse(http.getString())["data"];
+    http.end();
+    return jsObj;
   }
+  http.end();
   return nullptr;
 }
 
@@ -68,8 +76,11 @@ inline json get_now_huge_info(int cityId) {
   json params = {{"token", "08a9c1ff7802a29e1fc1cad1280d1c74"},
                  {"cityId", cityId}};
   if (http.POST(params.dump().c_str()) > 0) {
-    return json::parse(http.getString())["data"];
+    auto jsObj = json::parse(http.getString())["data"];
+    http.end();
+    return jsObj;
   }
+  http.end();
   return nullptr;
 }
 

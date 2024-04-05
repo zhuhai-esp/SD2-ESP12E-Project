@@ -11,9 +11,10 @@
 int cityId = 0;
 struct tm timeNow;
 char buf[256] = {0};
-String scrollText[6];
+String scrollText[5];
 LocInfo locInfo;
 WeatherInfo weaInfo;
+u8 wifiSleeping = 0;
 
 using namespace std;
 
@@ -34,8 +35,7 @@ void inline parseWeatherInfo(json &info) {
   weaInfo.wind = info["WIND"];
   weaInfo.weatherCode = info["weatherCode"];
   weaInfo.uvTxt = info["ULTRAVIOLETRAYS"];
-  scrollText[4] = "UV " + String(weaInfo.uvTxt.c_str());
-  scrollText[5] = WiFi.localIP().toString();
+  scrollText[4] = WiFi.localIP().toString();
 }
 
 void loadApiWeather() {
@@ -50,7 +50,7 @@ void loadApiWeather() {
 
 void inline startWifiConfig() {
   textLoading("WiFi Start...", 10);
-  delay(1000);
+  delay(500);
   WiFi.mode(WIFI_STA);
   WiFi.begin();
   for (int i = 0; i < 10; i++) {
@@ -63,13 +63,13 @@ void inline startWifiConfig() {
     WiFi.beginSmartConfig();
     textLoading("Use ESPTouch App", 40);
     while (!WiFi.smartConfigDone()) {
-      delay(1000);
+      delay(500);
     }
   }
   while (!WiFi.localIP().isSet()) {
     delay(200);
   }
-  textLoading("WiFi OK", 50);
+  textLoading("WiFi Connect OK", 50);
 }
 
 void inline startConfigTime() {
@@ -92,20 +92,33 @@ void inline setupOTAConfig() {
   ArduinoOTA.begin();
 }
 
-void inline run10minTask() { loadApiWeather(); }
+void run10minTask() {
+  if (wifiSleeping == 1) {
+    WiFi.forceSleepWake();
+    wifiSleeping = 0;
+  }
+}
 
-void inline run2sTask() {
+void run2sTask() {
   ArduinoOTA.handle();
   scrollBanner();
 }
 
-void inline run300msTask() {
+void run300msTask() {
   time_t now = time(nullptr);
   localtime_r(&now, &timeNow);
   digitalClockDisplay();
 }
 
-void inline run100msTask() { animationOneFrame(); }
+void run100msTask() { animationOneFrame(); }
+
+void inline runNoWaitTask() {
+  if (wifiSleeping == 0 && WiFi.status() == WL_CONNECTED) {
+    loadApiWeather();
+    WiFi.forceSleepBegin();
+    wifiSleeping = 1;
+  }
+}
 
 void inline setupTasks() {
   drawWeatherIcon();
@@ -138,6 +151,7 @@ void inline handleLoop() {
     ms10min = cur;
     run10minTask();
   }
+  runNoWaitTask();
 }
 
 #endif

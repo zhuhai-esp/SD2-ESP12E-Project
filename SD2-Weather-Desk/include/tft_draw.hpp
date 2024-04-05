@@ -29,12 +29,11 @@ extern String scrollText[];
 extern LocInfo locInfo;
 extern WeatherInfo weaInfo;
 
-int brightness = 50;
+int brightness = 5;
 auto tft = TFT_eSPI();
 auto clk = TFT_eSprite(&tft);
 
 int currentIndex = 0;
-int prevTime = 0; // 滚动显示更新标志位
 
 int tempnum = 0;      // 温度百分比
 int huminum = 0;      // 湿度百分比
@@ -78,18 +77,24 @@ void inline setupJPEG() {
 
 // 绘制进度条
 void textLoading(const char *txt, u8 progress) {
+  static u8 last = 0;
   clk.setColorDepth(8);
   clk.createSprite(200, 100);
   clk.fillScreen(TFT_BLACK);
   clk.drawRoundRect(0, 40, 200, 20, 3, TFT_WHITE);
-  clk.fillRoundRect(2, 42, progress * 2, 16, 2, FONT_COLOR_THREE);
   clk.loadFont(ZdyLwFont_20);
   clk.setTextColor(FONT_COLOR_ONE);
   clk.drawCentreString("Welcome to SD2", 100, 0, 4);
   clk.setTextColor(FONT_COLOR_TWO);
   clk.drawCentreString(txt, 100, 80, 4);
   clk.unloadFont();
-  clk.pushSprite(20, 80);
+  for (u8 i = last; i < progress; i++) {
+    clk.fillRoundRect(2, 42, i * 2, 16, 2, FONT_COLOR_THREE);
+    clk.pushSprite(20, 80);
+    delay(2);
+  }
+  last = progress;
+  clk.deleteSprite();
 }
 
 // 湿度图标显示函数
@@ -231,12 +236,8 @@ void scrollBanner() {
     clk.pushSprite(10, 45);
     clk.deleteSprite();
     clk.unloadFont();
-    if (currentIndex >= 5)
-      currentIndex = 0; // 回第一个
-    else
-      currentIndex += 1; // 准备切换到下一个
+    currentIndex = currentIndex >= 4 ? 0 : currentIndex + 1;
   }
-  prevTime = 1;
 }
 
 // 用快速线方法绘制数字
