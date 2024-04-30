@@ -99,7 +99,7 @@ uint16_t bgColor = 0x0000;
 
 // 其余状态标志位
 int LCD_Rotation = 0;        // LCD屏幕方向
-int LCD_BL_PWM = 50;         // 屏幕亮度0-100，默认50
+int LCD_BL_PWM = 20;         // 屏幕亮度0-100，默认50
 uint8_t Wifi_en = 1;         // WIFI模块启动  1：打开    0：关闭
 uint8_t UpdateWeater_en = 0; // 更新时间标志位
 int prevTime = 0;            // 滚动显示更新标志位
@@ -183,10 +183,10 @@ void loading(byte delayTime) {
   clk.setColorDepth(8);
   clk.createSprite(200, 100);                      // 创建窗口
   clk.fillSprite(0x0000);                          // 填充率
-  clk.drawRoundRect(0, 0, 200, 16, 8, 0xFFFF);     // 空心圆角矩形
-  clk.fillRoundRect(3, 3, loadNum, 10, 5, 0xFFFF); // 实心圆角矩形
+  clk.drawRoundRect(0, 0, 200, 16, 4, 0xFFFF);     // 空心圆角矩形
+  clk.fillRoundRect(3, 3, loadNum, 10, 3, 0xFFFF); // 实心圆角矩形
   clk.setTextDatum(CC_DATUM);                      // 设置文本数据
-  clk.setTextColor(TFT_GREEN, 0x0000);
+  clk.setTextColor(FONT_COLOR_SEC, 0x0000);
   clk.drawString("Connecting to WiFi......", 100, 40, 2);
   clk.setTextColor(TFT_WHITE, 0x0000);
   clk.drawRightString(Version, 180, 60, 2);
@@ -385,11 +385,11 @@ void Web_win() {
   clk.createSprite(200, 60);  // 创建窗口
   clk.fillSprite(0x0000);     // 填充率
   clk.setTextDatum(CC_DATUM); // 设置文本数据
-  clk.setTextColor(TFT_GREEN, 0x0000);
-  clk.drawString("WiFi Connect Fail!", 100, 10, 2);
+  clk.setTextColor(FONT_COLOR_HOUR, 0x0000);
+  clk.drawString("Please Connect AP Below", 100, 10, 2);
   clk.drawString("SSID:", 45, 40, 2);
-  clk.setTextColor(TFT_WHITE, 0x0000);
-  clk.drawString("AutoConnectAP", 125, 40, 2);
+  clk.setTextColor(FONT_COLOR_MIN, 0x0000);
+  clk.drawString("SmallClock", 125, 40, 2);
   clk.pushSprite(20, 50); // 窗口位置
   clk.deleteSprite();
 }
@@ -482,7 +482,7 @@ void Webconfig() {
 
   bool res;
   // res = wm.autoConnect(); // auto generated AP name from chipid
-  res = wm.autoConnect("AutoConnectAP"); // anonymous ap
+  res = wm.autoConnect("SmallClock"); // anonymous ap
   //  res = wm.autoConnect("AutoConnectAP","password"); // password protected ap
 
   while (!res)

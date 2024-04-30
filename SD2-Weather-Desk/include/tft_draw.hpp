@@ -29,7 +29,7 @@ extern String scrollText[];
 extern LocInfo locInfo;
 extern WeatherInfo weaInfo;
 
-int brightness = 5;
+int brightness = 10;
 auto tft = TFT_eSPI();
 auto clk = TFT_eSprite(&tft);
 

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 
-int LCD_BL_PWM = 5;
+int LCD_BL_PWM = 10;
 TFT_eSPI tft = TFT_eSPI();
 
 void setup() {
