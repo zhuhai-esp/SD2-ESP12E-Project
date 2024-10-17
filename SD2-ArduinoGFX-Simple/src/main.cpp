@@ -2,7 +2,7 @@
 #include <Arduino_GFX_Library.h>
 
 #define TFT_BL D1
-#define LCD_BL_PWM 10
+#define LCD_BL_PWM 5
 
 Arduino_DataBus *bus = new Arduino_HWSPI(D3, D8);
 Arduino_GFX *tft = new Arduino_ST7789(bus, D4, 0, true, 240, 240);

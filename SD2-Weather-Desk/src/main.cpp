@@ -3,7 +3,8 @@
 void setup() {
   Serial.begin(115200);
   setupTFT();
-  startWifiConfig();
+  // startWifiConfig();
+  webConfigWiFi();
   startConfigTime();
   setupOTAConfig();
   setupJPEG();

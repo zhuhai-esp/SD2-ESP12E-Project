@@ -7,7 +7,7 @@
 using namespace std;
 
 typedef struct {
-    string cityName;
+    String cityName;
     int cityId;
 } LocInfo;
 
@@ -17,10 +17,10 @@ typedef struct {
     s16 curTemp;
     s16 humi;
     s16 aqi;
-    string condition;
-    string wind;
+    String condition;
+    String wind;
     s16 weatherCode;
-    string uvTxt;
+    String uvTxt;
 } WeatherInfo;
 
 #endif

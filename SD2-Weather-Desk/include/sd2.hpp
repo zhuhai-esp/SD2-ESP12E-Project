@@ -1,10 +1,10 @@
 #ifndef __SD2_BOARD_HPP__
 #define __SD2_BOARD_HPP__
 
+#include "WiFiManager.h"
 #include "api_bean.hpp"
 #include "tft_draw.hpp"
 #include "webapi.hpp"
-#include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 
@@ -18,23 +18,23 @@ u8 wifiSleeping = 0;
 
 using namespace std;
 
-void inline parseCityInfo(json &info) {
+void inline parseCityInfo(JsonDocument &info) {
   cityId = info["cityId"];
   locInfo.cityId = cityId;
   auto ipInfo = info["ip"];
-  locInfo.cityName = ipInfo["district"];
+  locInfo.cityName = (String)ipInfo["district"];
 }
 
-void inline parseWeatherInfo(json &info) {
+void inline parseWeatherInfo(JsonDocument &info) {
   weaInfo.minTemp = info["MINTEM"];
   weaInfo.maxTemp = info["MAXTEM"];
   weaInfo.curTemp = info["TEMP"];
   weaInfo.humi = info["HUMI"];
   weaInfo.aqi = info["aqi"];
-  weaInfo.condition = info["CONDITIONSTEXT"];
-  weaInfo.wind = info["WIND"];
+  weaInfo.condition = (String)info["CONDITIONSTEXT"];
+  weaInfo.wind = (String)info["WIND"];
   weaInfo.weatherCode = info["weatherCode"];
-  weaInfo.uvTxt = info["ULTRAVIOLETRAYS"];
+  weaInfo.uvTxt = (String)info["ULTRAVIOLETRAYS"];
   scrollText[4] = WiFi.localIP().toString();
 }
 
@@ -46,6 +46,14 @@ void loadApiWeather() {
   auto info = get_now_huge_info(cityId);
   parseWeatherInfo(info);
   refreshWeatherData();
+}
+
+void inline webConfigWiFi() {
+  textLoading("WiFi Start...", 10);
+  WiFiManager wm;
+  textLoading("Config WiFi In Web", 40);
+  wm.autoConnect();
+  textLoading("WiFi Connect OK", 50);
 }
 
 void inline startWifiConfig() {
