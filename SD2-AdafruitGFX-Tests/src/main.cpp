@@ -183,18 +183,7 @@ void tftPrintTest() {
   tft.print(" seconds.");
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  tft.init(240, 240, SPI_MODE2);
-  tft.setRotation(2);
-  tft.fillScreen(ST77XX_BLACK);
-
-  pinMode(TFT_BL, OUTPUT);
-  analogWriteResolution(10);
-  analogWriteFreq(25000);
-  analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
-
+void testCases() {
   tftPrintTest();
   delay(4000);
 
@@ -225,9 +214,24 @@ void setup() {
   delay(1000);
 }
 
+void setup() {
+  Serial.begin(115200);
+
+  tft.init(240, 240, SPI_MODE2);
+  tft.setRotation(2);
+  tft.fillScreen(ST77XX_BLACK);
+
+  pinMode(TFT_BL, OUTPUT);
+  analogWriteResolution(10);
+  analogWriteFreq(25000);
+  analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
+}
+
 void loop() {
+  testCases();
   tft.invertDisplay(true);
-  delay(10000);
+  delay(1000);
+  testCases();
   tft.invertDisplay(false);
-  delay(10000);
+  delay(1000);
 }
