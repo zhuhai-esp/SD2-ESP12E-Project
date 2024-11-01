@@ -861,7 +861,7 @@ void setup() {
     DHT_img_flag = EEPROM.read(DHT_addr);
 #endif
     //从eeprom读取背光亮度设置
-    if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100){
+    if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
         LCD_BL_PWM = EEPROM.read(BL_addr);
     }
     pinMode(LCD_BL_PIN, OUTPUT);
@@ -869,7 +869,7 @@ void setup() {
     analogWriteFreq(25000);
     analogWrite(LCD_BL_PIN, 1023 - (LCD_BL_PWM * 10));
     //从eeprom读取屏幕方向设置
-    if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3){
+    if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3) {
         LCD_Rotation = EEPROM.read(Ro_addr);
     }
     //从eeprom读取天气更新时间
@@ -935,10 +935,10 @@ void setup() {
 
     int CityCODE = 0;
     readCityCodefromEEP(&CityCODE);
-    if (CityCODE >= 101000000 && CityCODE <= 102000000){
-      cityCode = CityCODE;
+    if (CityCODE >= 101000000 && CityCODE <= 102000000) {
+        cityCode = CityCODE;
     } else {
-      getCityCode();  //获取城市代码
+        getCityCode();  //获取城市代码
     }
     tft.fillScreen(TFT_BLACK);//清屏
     TJpgDec.drawJpg(15, 183, temperature, sizeof(temperature));  //温度图标
@@ -1209,21 +1209,17 @@ void scrollBanner() {
     if (scrollText[currentIndex]) {
         clkb.setColorDepth(8);
         clkb.loadFont(ZdyLwFont_20);
-        clkb.createSprite(150, 30);
+        clkb.createSprite(160, 30);
         clkb.fillSprite(bgColor);
         clkb.setTextWrap(false);
         clkb.setTextDatum(CC_DATUM);
         clkb.setTextColor(TFT_WHITE, bgColor);
         clkb.drawString(scrollText[currentIndex], 74, 16);
-        clkb.pushSprite(10, 45);
-
+        clkb.pushSprite(6, 45);
+        clkb.fillSprite(bgColor);
         clkb.deleteSprite();
         clkb.unloadFont();
-
-        if (currentIndex >= 6)
-            currentIndex = 0;  //回第一个
-        else
-            currentIndex += 1;  //准备切换到下一个
+        currentIndex = currentIndex >= 6 ? 0 : currentIndex + 1;
     }
     prevTime = 1;
 }
