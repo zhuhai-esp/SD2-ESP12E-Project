@@ -310,8 +310,8 @@ void loading(byte delayTime) {
     clk.createSprite(200, 100);//创建窗口
     clk.fillSprite(0x0000);   //填充率
 
-    clk.drawRoundRect(0, 0, 200, 16, 8, 0xFFFF);       //空心圆角矩形
-    clk.fillRoundRect(3, 3, loadNum, 10, 5, 0xFFFF);   //实心圆角矩形
+    clk.drawRoundRect(0, 0, 200, 16, 4, 0xFFFF);       //空心圆角矩形
+    clk.fillRoundRect(3, 3, loadNum, 10, 2, TFT_GREEN);   //实心圆角矩形
     clk.setTextDatum(CC_DATUM);   //设置文本数据
     clk.setTextColor(TFT_GREEN, 0x0000);
     clk.drawString("Connecting to WiFi......", 100, 40, 2);
@@ -696,7 +696,7 @@ void Web_Sever() {
 
 //web服务打开后LCD显示登陆网址及IP
 void Web_sever_Win() {
-    IPAddress IP_adr = WiFi.localIP();
+    // IPAddress IP_adr = WiFi.localIP();
     clk.setColorDepth(8);
 
     clk.createSprite(200, 70);//创建窗口
@@ -742,7 +742,7 @@ void Webconfig() {
     wm.resetSettings(); // wipe settings
 
     // add a custom input field
-    int customFieldLength = 40;
+    //int customFieldLength = 40;
     const char *set_rotation = "<br/><label for='set_rotation'>Set Rotation</label>\
                               <input type='radio' name='set_rotation' value='0' checked> One<br>\
                               <input type='radio' name='set_rotation' value='1'> Two<br>\
@@ -754,7 +754,7 @@ void Webconfig() {
     WiFiManagerParameter  custom_DHT11_en("DHT11_en","Enable DHT11 sensor","0",1);
 #endif
     WiFiManagerParameter custom_weatertime("WeaterUpdateTime", "Weather Update Time(Min)", "10", 3);
-    WiFiManagerParameter custom_cc("CityCode", "CityCode", "101250101", 9);
+    WiFiManagerParameter custom_cc("CityCode", "CityCode", cityCode.c_str(), 9);
     WiFiManagerParameter p_lineBreak_notext("<p></p>");
 
     wm.addParameter(&p_lineBreak_notext);
@@ -1092,7 +1092,7 @@ String scrollText[7];//天气信息存储
 //天气信息写到屏幕上
 void weaterData(String *cityDZ, String *dataSK, String *dataFC) {
     //解析第一段JSON
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     deserializeJson(doc, *dataSK);
     JsonObject sk = doc.as<JsonObject>();
 
