@@ -1,7 +1,7 @@
 #ifndef NUMBER_H
 #define NUMBER_H
 
-#include <TFT_eSPI.h> 
+#include <TFT_eSPI.h>
 
 #include "font/O_3660_i0.h"
 #include "font/O_3660_i1.h"
@@ -36,18 +36,13 @@
 #include "font/W_1830_i8.h"
 #include "font/W_1830_i9.h"
 
-
-class Number
-{
+class Number {
 private:
-
-
 public:
-  //void init();
-  void printfW3660(int numx,int numy,int numn);
-  void printfO3660(int numx,int numy,int numn);
-  void printfW1830(int numx,int numy,int numn);
+  // void init();
+  void printfW3660(int numx, int numy, int numn);
+  void printfO3660(int numx, int numy, int numn);
+  void printfW1830(int numx, int numy, int numn);
 };
-
 
 #endif
