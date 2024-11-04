@@ -59,9 +59,6 @@
 // Web服务器使能标志位----打开后将无法使用wifi休眠功能。
 #define WebSever_EN 1
 
-// 注意，此版本中的DHT11传感器和太空人图片选择可以通过web网页设置来进行选择，无需通过使能标志来重新编译。
-// 设定DHT11温湿度传感器使能标志
-#define DHT_EN 0
 // 设置太空人图片是否使用
 #define imgAst_EN 1
 
@@ -69,17 +66,7 @@
 
 #include <WiFiManager.h>
 
-// WiFiManager 参数
-WiFiManager wm; // global wm instance
-// WiFiManagerParameter custom_field; // global param ( for non blocking w
-// params )
-#endif
-
-#if DHT_EN
-#include "DHT.h"
-#define DHTPIN 12
-#define DHTTYPE DHT11
-DHT dht(DHTPIN, DHTTYPE);
+WiFiManager wm; 
 #endif
 
 /* *****************************************************************
@@ -339,50 +326,6 @@ void tempWin() {
   clk.deleteSprite();
 }
 
-#if DHT_EN
-// 外接DHT11传感器，显示数据
-void IndoorTem() {
-  float t = dht.readTemperature();
-  float h = dht.readHumidity();
-  String s = "内温";
-  /***绘制相关文字***/
-  clk.setColorDepth(8);
-  clk.loadFont(ZdyLwFont_20);
-
-  // 位置
-  clk.createSprite(58, 30);
-  clk.fillSprite(bgColor);
-  clk.setTextDatum(CC_DATUM);
-  clk.setTextColor(TFT_WHITE, bgColor);
-  clk.drawString(s, 29, 16);
-  clk.pushSprite(172, 150);
-  clk.deleteSprite();
-
-  // 温度
-  clk.createSprite(60, 24);
-  clk.fillSprite(bgColor);
-  clk.setTextDatum(CC_DATUM);
-  clk.setTextColor(TFT_WHITE, bgColor);
-  clk.drawFloat(t, 1, 20, 13);
-  //  clk.drawString(sk["temp"].as<String>()+"℃",28,13);
-  clk.drawString("℃", 50, 13);
-  clk.pushSprite(170, 184);
-  clk.deleteSprite();
-
-  // 湿度
-  clk.createSprite(60, 24);
-  clk.fillSprite(bgColor);
-  clk.setTextDatum(CC_DATUM);
-  clk.setTextColor(TFT_WHITE, bgColor);
-  //  clk.drawString(sk["SD"].as<String>(),28,13);
-  clk.drawFloat(h, 1, 20, 13);
-  clk.drawString("%", 50, 13);
-  // clk.drawString("100%",28,13);
-  clk.pushSprite(170, 214);
-  clk.deleteSprite();
-}
-#endif
-
 #if !WM_EN
 // 微信配网函数
 void SmartConfig(void) {
@@ -627,11 +570,6 @@ void handleconfig() {
              "name='web_bl' placeholder='10'><br>";
   content += "<br>天气更新分钟:(默认:10分钟)<br><input type='text' "
              "name='web_upwe_t' placeholder='10'><br>";
-#if DHT_EN
-  content +=
-      "<br>室内温湿度  <input type='radio' name='web_DHT11_en' value='0'checked> 关 \
-                               <input type='radio' name='web_DHT11_en' value='1'> 开<br>";
-#endif
   content += "<br>屏幕方向<br>\
                     <input type='radio' name='web_set_rotation' value='0' checked> USB 向下<br>\
                     <input type='radio' name='web_set_rotation' value='1'> USB 向右<br>\
@@ -749,10 +687,6 @@ void Webconfig() {
                               <input type='radio' name='set_rotation' value='3'> Four<br>";
   WiFiManagerParameter custom_rot(set_rotation); // custom html input
   WiFiManagerParameter custom_bl("LCDBL", "LCD BackLight(1-100)", "10", 3);
-#if DHT_EN
-  WiFiManagerParameter custom_DHT11_en("DHT11_en", "Enable DHT11 sensor", "0",
-                                       1);
-#endif
   WiFiManagerParameter custom_weatertime("WeaterUpdateTime",
                                          "Weather Update Time(Min)", "10", 3);
   WiFiManagerParameter custom_cc("CityCode", "CityCode", cityCode.c_str(), 9);
@@ -766,10 +700,6 @@ void Webconfig() {
   wm.addParameter(&custom_weatertime);
   wm.addParameter(&p_lineBreak_notext);
   wm.addParameter(&custom_rot);
-#if DHT_EN
-  wm.addParameter(&p_lineBreak_notext);
-  wm.addParameter(&custom_DHT11_en);
-#endif
   wm.setSaveParamsCallback(saveParamCallback);
   std::vector<const char *> menu = {"wifi", "restart"};
   wm.setMenu(menu);
@@ -797,10 +727,6 @@ String getParam(String name) {
 void saveParamCallback() {
   int cc;
   Serial.println("[CALLBACK] saveParamCallback fired");
-  // 将从页面中获取的数据保存
-#if DHT_EN
-  DHT_img_flag = getParam("DHT11_en").toInt();
-#endif
   updateweater_time = getParam("WeaterUpdateTime").toInt();
   cc = getParam("CityCode").toInt();
   LCD_Rotation = getParam("set_rotation").toInt();
@@ -839,14 +765,6 @@ void saveParamCallback() {
   // 天气更新时间
   Serial.printf("天气更新时间调整为：");
   Serial.println(updateweater_time);
-
-#if DHT_EN
-  // 是否使用DHT11传感器
-  Serial.printf("DHT11传感器：");
-  EEPROM.write(DHT_addr, DHT_img_flag);
-  EEPROM.commit(); // 保存更改的数据
-  Serial.println((DHT_img_flag ? "已启用" : "未启用"));
-#endif
 }
 
 #endif
@@ -857,11 +775,6 @@ void setup() {
   // 在初始化中使wifi重置，需重新配置WiFi
   wm.resetSettings();
 
-#if DHT_EN
-  dht.begin();
-  // 从eeprom读取DHT传感器使能标志
-  DHT_img_flag = EEPROM.read(DHT_addr);
-#endif
   // 从eeprom读取背光亮度设置
   if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
     LCD_BL_PWM = EEPROM.read(BL_addr);
@@ -942,10 +855,6 @@ void setup() {
   TJpgDec.drawJpg(15, 213, humidity, sizeof(humidity));       // 湿度图标
   getCityWeater();
 
-#if DHT_EN
-  if (DHT_img_flag != 0)
-    IndoorTem();
-#endif
 #if !WebSever_EN
   WiFi.forceSleepBegin(); // wifi off
   Serial.println("WIFI休眠......");
@@ -972,10 +881,6 @@ void LCD_reflash(int en) {
   }
   // 两秒钟更新一次
   if (info.tm_sec % 2 == 0 && prevTime == 0 || en == 1) {
-#if DHT_EN
-    if (DHT_img_flag != 0)
-      IndoorTem();
-#endif
     scrollBanner();
   }
 #if imgAst_EN
@@ -1232,7 +1137,7 @@ void scrollBanner() {
 void imgAnim() {
   int x = 160, y = 160;
   // x ms切换一次
-  if (millis() - AprevTime > 37) {
+  if (millis() - AprevTime > 120) {
     Anim++;
     AprevTime = millis();
   }
