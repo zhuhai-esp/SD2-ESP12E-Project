@@ -51,23 +51,15 @@
 #include <TFT_eSPI.h>
 #include <TJpg_Decoder.h>
 
-/* *****************************************************************
- *  配置使能位
- * *****************************************************************/
-// WEB配网使能标志位----WEB配网打开后会默认关闭smartconfig功能
-#define WM_EN 1
 // Web服务器使能标志位----打开后将无法使用wifi休眠功能。
 #define WebSever_EN 1
 
 // 设置太空人图片是否使用
 #define imgAst_EN 1
 
-#if WM_EN
-
 #include <WiFiManager.h>
 
-WiFiManager wm; 
-#endif
+WiFiManager wm;
 
 /* *****************************************************************
  *  字库、图片库
@@ -325,31 +317,6 @@ void tempWin() {
   clk.pushSprite(45, 192);                         // 窗口位置
   clk.deleteSprite();
 }
-
-#if !WM_EN
-// 微信配网函数
-void SmartConfig(void) {
-  WiFi.mode(WIFI_STA); // 设置STA模式
-  // tft.pushImage(0, 0, 240, 240, qr);
-  tft.pushImage(0, 0, 240, 240, qr);
-  Serial.println("\r\nWait for Smartconfig..."); // 打印log信息
-  // 开始SmartConfig，等待手机端发出用户名和密码
-  WiFi.beginSmartConfig();
-  while (1) {
-    Serial.print(".");
-    // wait for a second
-    delay(100);
-    // 配网成功，接收到SSID和密码
-    if (WiFi.smartConfigDone()) {
-      Serial.println("SmartConfig Success");
-      Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
-      Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
-      break;
-    }
-  }
-  loadNum = 194;
-}
-#endif
 
 // 串口调试设置函数
 void Serial_set() {
@@ -650,8 +617,6 @@ void Web_sever_Win() {
 
 #endif
 
-#if WM_EN
-
 // WEB配网LCD显示函数
 void Web_win() {
   clk.setColorDepth(8);
@@ -767,8 +732,6 @@ void saveParamCallback() {
   Serial.println(updateweater_time);
 }
 
-#endif
-
 void setup() {
   Serial.begin(115200);
   EEPROM.begin(1024);
@@ -808,15 +771,8 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     loading(30);
     if (loadNum >= 194) {
-      // 使能web配网后自动将smartconfig配网失效
-#if WM_EN
       Web_win();
       Webconfig();
-#endif
-
-#if !WM_EN
-      SmartConfig();
-#endif
       break;
     }
   }
