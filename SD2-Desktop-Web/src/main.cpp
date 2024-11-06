@@ -64,7 +64,7 @@ WiFiManager wm;
 /* *****************************************************************
  *  字库、图片库
  * *****************************************************************/
-#include "font/ZdyLwFont_20.h"
+#include "font/ZoloFont_20.h"
 #include "img/humidity.h"
 #include "img/misaka.h"
 #include "img/temperature.h"
@@ -962,7 +962,7 @@ void weaterData(String *cityDZ, String *dataSK, String *dataFC) {
 
   /***绘制相关文字***/
   clk.setColorDepth(8);
-  clk.loadFont(ZdyLwFont_20);
+  clk.loadFont(ZoloFont_20);
 
   // 温度
   clk.createSprite(58, 24);
@@ -1072,7 +1072,7 @@ TFT_eSprite clkb = TFT_eSprite(&tft);
 void scrollBanner() {
   if (scrollText[currentIndex]) {
     clkb.setColorDepth(8);
-    clkb.loadFont(ZdyLwFont_20);
+    clkb.loadFont(ZoloFont_20);
     clkb.createSprite(160, 30);
     clkb.fillSprite(bgColor);
     clkb.setTextWrap(false);
@@ -1170,7 +1170,7 @@ void digitalClockDisplay(int reflash_en) {
     reflash_en = 0;
   /***日期****/
   clk.setColorDepth(8);
-  clk.loadFont(ZdyLwFont_20);
+  clk.loadFont(ZoloFont_20);
 
   // 星期
   clk.createSprite(58, 30);
