@@ -324,8 +324,8 @@
 
 /*Enable asserts if an operation is failed or an invalid data is found.
  *If LV_USE_LOG is enabled an error message will be printed on failure*/
-#define LV_USE_ASSERT_NULL          1   /*Check if the parameter is NULL. (Very fast, recommended)*/
-#define LV_USE_ASSERT_MALLOC        1   /*Checks is the memory is successfully allocated or no. (Very fast, recommended)*/
+#define LV_USE_ASSERT_NULL          0   /*Check if the parameter is NULL. (Very fast, recommended)*/
+#define LV_USE_ASSERT_MALLOC        0   /*Checks is the memory is successfully allocated or no. (Very fast, recommended)*/
 #define LV_USE_ASSERT_STYLE         0   /*Check if the styles are properly initialized. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MEM_INTEGRITY 0   /*Check the integrity of `lv_mem` after critical operations. (Slow)*/
 #define LV_USE_ASSERT_OBJ           0   /*Check the object's type and existence (e.g. not deleted). (Slow)*/
@@ -485,12 +485,12 @@
 #define LV_FONT_MONTSERRAT_10 0
 #define LV_FONT_MONTSERRAT_12 0
 #define LV_FONT_MONTSERRAT_14 0
-#define LV_FONT_MONTSERRAT_16 0
+#define LV_FONT_MONTSERRAT_16 1
 #define LV_FONT_MONTSERRAT_18 0
 #define LV_FONT_MONTSERRAT_20 0
 #define LV_FONT_MONTSERRAT_22 0
-#define LV_FONT_MONTSERRAT_24 0
-#define LV_FONT_MONTSERRAT_26 1
+#define LV_FONT_MONTSERRAT_24 1
+#define LV_FONT_MONTSERRAT_26 0
 #define LV_FONT_MONTSERRAT_28 0
 #define LV_FONT_MONTSERRAT_30 0
 #define LV_FONT_MONTSERRAT_32 0
@@ -519,7 +519,7 @@
 #define LV_FONT_CUSTOM_DECLARE
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT &lv_font_montserrat_26
+#define LV_FONT_DEFAULT &lv_font_montserrat_24
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.
@@ -684,14 +684,14 @@
     #define LV_THEME_DEFAULT_DARK 1
 
     /*1: Enable grow on press*/
-    #define LV_THEME_DEFAULT_GROW 1
+    #define LV_THEME_DEFAULT_GROW 0
 
     /*Default transition time in [ms]*/
     #define LV_THEME_DEFAULT_TRANSITION_TIME 80
 #endif /*LV_USE_THEME_DEFAULT*/
 
 /*A very simple theme that is a good starting point for a custom theme*/
-#define LV_USE_THEME_SIMPLE 1
+#define LV_USE_THEME_SIMPLE 0
 
 /*A theme designed for monochrome displays*/
 #define LV_USE_THEME_MONO 0
