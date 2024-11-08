@@ -6,7 +6,7 @@
 #define LV_DISP_HOR_RES 240
 #define LV_DISP_VER_RES 240
 
-LV_FONT_DECLARE(led_48)
+LV_FONT_DECLARE(led_64)
 
 int LCD_BL_PWM = 5;
 TFT_eSPI tft = TFT_eSPI();
@@ -104,20 +104,20 @@ void setup() {
   startConfigTime();
 
   label_date = lv_label_create(lv_scr_act());
-  lv_obj_align(label_date, LV_ALIGN_TOP_MID, 0, 8);
+  lv_obj_align(label_date, LV_ALIGN_TOP_MID, 0, 16);
   lv_label_set_text(label_date, "2024-01-01");
 
   label_time = lv_label_create(lv_scr_act());
   lv_style_init(&style);
-  lv_style_set_text_color(&style, lv_color_hex(0x00FA9A));
+  lv_style_set_text_color(&style, lv_color_hex(0xfffacd));
   lv_obj_add_style(label_time, &style, 0);
 
   lv_obj_align(label_time, LV_ALIGN_CENTER, 0, 0);
-  lv_obj_set_style_text_font(label_time, &led_48, LV_PART_MAIN);
+  lv_obj_set_style_text_font(label_time, &led_64, LV_PART_MAIN);
   lv_label_set_text(label_time, "00:00:00");
 
   label_ip = lv_label_create(lv_scr_act());
-  lv_obj_align(label_ip, LV_ALIGN_BOTTOM_MID, 0, -8);
+  lv_obj_align(label_ip, LV_ALIGN_BOTTOM_MID, 0, -16);
   lv_label_set_text(label_ip, "IP: 127.0.0.1");
 
   showClientIP();
