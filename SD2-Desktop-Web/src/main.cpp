@@ -638,7 +638,6 @@ void Web_win() {
 // WEB配网函数
 void Webconfig() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-
   delay(3000);
   wm.resetSettings(); // wipe settings
 
@@ -671,13 +670,13 @@ void Webconfig() {
 
   // set dark theme
   wm.setClass("invert");
-  wm.setMinimumSignalQuality(
-      20); // set min RSSI (percentage) to show in scans, null = 8%
-
+  // set min RSSI (percentage) to show in scans, null = 8%
+  wm.setMinimumSignalQuality(20); 
   bool res;
-  res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-  while (!res)
-    ;
+  // anonymous ap
+  res = wm.autoConnect("AutoConnectAP"); 
+  while (!res){
+  }
 }
 
 String getParam(String name) {
@@ -739,16 +738,18 @@ void setup() {
   wm.resetSettings();
 
   // 从eeprom读取背光亮度设置
-  if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
-    LCD_BL_PWM = EEPROM.read(BL_addr);
+  auto bl = EEPROM.read(BL_addr);
+  if (bl > 0 && bl < 100) {
+    LCD_BL_PWM = bl;
   }
   pinMode(LCD_BL_PIN, OUTPUT);
   analogWriteResolution(10);
   analogWriteFreq(25000);
   analogWrite(LCD_BL_PIN, 1023 - (LCD_BL_PWM * 10));
   // 从eeprom读取屏幕方向设置
-  if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3) {
-    LCD_Rotation = EEPROM.read(Ro_addr);
+  auto rot = EEPROM.read(Ro_addr);
+  if (rot >= 0 && rot <= 3) {
+    LCD_Rotation = rot;
   }
   // 从eeprom读取天气更新时间
   updateweater_time = EEPROM.read(UpWeT_addr);
