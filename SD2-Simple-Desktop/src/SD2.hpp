@@ -24,8 +24,6 @@
   "AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 "       \
   "Safari/604.1"
 
-#define timeY 82 // 定义高度
-
 #define FONT_COLOR_ONE 0x6D9D
 #define FONT_COLOR_TWO 0x7FC0
 #define FONT_COLOR_THREE 0xEC1D
@@ -38,7 +36,7 @@ String cityCode = "101280601";
 Adafruit_NeoPixel pixels(NUM_LEDS, PIN_WS2812, NEO_GRB + NEO_KHZ800);
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite clk = TFT_eSprite(&tft);
-uint16_t brightness = 10;
+uint16_t brightness = 8;
 uint8_t rotation = 0;
 WiFiManager wm;
 char buf[256];
@@ -235,11 +233,10 @@ void inline getCityCode() {
   httpClient.end();
 }
 
-bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h,
-                uint16_t *bitmap) {
+bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bpm) {
   if (y >= tft.height())
     return 0;
-  tft.pushImage(x, y, w, h, bitmap);
+  tft.pushImage(x, y, w, h, bpm);
   return 1;
 }
 
@@ -342,28 +339,35 @@ void drawLineFont(uint32_t _x, uint32_t _y, uint32_t _num, uint32_t _size,
   }
 }
 
-void digitalClockDisplay(uint8_t force = 0) {
+void showTimeDate(uint8_t force = 0) {
   time_t now = time(nullptr);
   localtime_r(&now, &timeNow);
   auto now_hour = timeNow.tm_hour;  // 获取小时
   auto now_minute = timeNow.tm_min; // 获取分钟
   auto now_second = timeNow.tm_sec; // 获取秒针
   auto yDay = timeNow.tm_yday;
-  if ((now_hour != Hour_sign) || (force == 1)) {
+  uint32_t timeY = 82;
+  if (now_hour / 10 != Hour_sign / 10 || (force == 1)) {
     drawLineFont(20, timeY, now_hour / 10, 3, FONT_COLOR_HOUR);
+  }
+  if (now_hour % 10 != Hour_sign % 10 || (force == 1)) {
     drawLineFont(60, timeY, now_hour % 10, 3, FONT_COLOR_HOUR);
-    Hour_sign = now_hour;
   }
-  if ((now_minute != Minute_sign) || (force == 1)) {
+  Hour_sign = now_hour;
+  if ((now_minute / 10 != Minute_sign / 10) || (force == 1)) {
     drawLineFont(101, timeY, now_minute / 10, 3, FONT_COLOR_MIN);
+  }
+  if ((now_minute % 10 != Minute_sign % 10) || (force == 1)) {
     drawLineFont(141, timeY, now_minute % 10, 3, FONT_COLOR_MIN);
-    Minute_sign = now_minute;
   }
-  if ((now_second != Second_sign) || (force == 1)) {
+  Minute_sign = now_minute;
+  if ((now_second / 10 != Second_sign / 10) || (force == 1)) {
     drawLineFont(182, timeY + 30, now_second / 10, 2, FONT_COLOR_SEC);
-    drawLineFont(202, timeY + 30, now_second % 10, 2, FONT_COLOR_SEC);
-    Second_sign = now_second;
   }
+  if ((now_second % 10 != Second_sign % 10) || (force == 1)) {
+    drawLineFont(202, timeY + 30, now_second % 10, 2, FONT_COLOR_SEC);
+  }
+  Second_sign = now_second;
   if (yDay != YDay_sign || (force == 1)) {
     YDay_sign = yDay;
     clk.setColorDepth(8);

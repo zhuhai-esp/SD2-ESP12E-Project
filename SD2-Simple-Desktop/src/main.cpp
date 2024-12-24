@@ -7,7 +7,7 @@ void run10minTask() { getCityWeater(); }
 void run2sTask() { scrollBanner(); }
 
 void run300msTask() {
-  digitalClockDisplay();
+  showTimeDate();
   uint32_t c = random();
   pixels.setPixelColor(0, c);
   pixels.show();
@@ -24,7 +24,7 @@ void setup() {
   initTJpeg();
   animationOneFrame();
   loadInitWeather();
-  digitalClockDisplay(1);
+  showTimeDate(1);
 }
 
 void loop() {
