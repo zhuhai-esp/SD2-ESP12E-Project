@@ -24,9 +24,6 @@
   "AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 "       \
   "Safari/604.1"
 
-#define FONT_COLOR_ONE 0x6D9D
-#define FONT_COLOR_TWO 0x7FC0
-#define FONT_COLOR_THREE 0xEC1D
 #define FONT_COLOR_HOUR 0x6D9D
 #define FONT_COLOR_MIN 0x7FC0
 #define FONT_COLOR_SEC 0xEC1D
@@ -247,23 +244,42 @@ void inline initTJpeg() {
 }
 
 void inline autoConfigWifi() {
-  tft.println("Start Config WiFi!");
+  wm.setAPCallback([](WiFiManager *_wm) {
+    tft.loadFont(ZoloFont_20);
+    tft.println("WiFi Failed!");
+    tft.println("Please Connect AP:");
+    tft.setTextColor(TFT_GREEN);
+    tft.println(_wm->getConfigPortalSSID().c_str());
+    tft.setTextColor(TFT_WHITE);
+    tft.println("\nThen Open Link:");
+    tft.setTextColor(TFT_GREEN);
+    tft.printf("http://%s\n", WiFi.softAPIP().toString().c_str());
+    tft.setTextColor(TFT_WHITE);
+    tft.unloadFont();
+  });
+  wm.setConfigPortalTimeout(180);
+  wm.setConfigPortalTimeoutCallback([]() { ESP.restart(); });
   auto res = wm.autoConnect();
   if (!res) {
     ESP.restart();
   }
+  tft.loadFont(ZoloFont_20);
   tft.println("WiFi Connected!");
   sprintf(buf, "IP: %s", WiFi.localIP().toString().c_str());
   tft.println(buf);
+  tft.unloadFont();
 }
 
 void inline startConfigTime() {
+  tft.loadFont(ZoloFont_20);
   tft.println("Start Config Time!");
+  tft.unloadFont();
   const int timeZone = 8 * 3600;
   configTime(timeZone, 0, "ntp6.aliyun.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn");
   while (time(nullptr) < 8 * 3600 * 2) {
     delay(300);
   }
+  delay(1000);
 }
 
 void inline initPixels() {
@@ -282,9 +298,8 @@ void inline initDisplay() {
   analogWriteResolution(10);
   analogWriteFreq(25000);
   analogWrite(TFT_BL, 1023 - (brightness * 10));
-  tft.setCursor(0, 16);
+  tft.setCursor(0, 4);
   tft.setTextColor(TFT_WHITE);
-  tft.setFreeFont(&FreeSerif9pt7b);
 }
 
 void inline loadInitWeather() {
