@@ -1109,10 +1109,6 @@ void setup() {
   setSyncProvider(getNtpTime);
   setSyncInterval(300);
 
-  TJpgDec.setJpgScale(1);
-  TJpgDec.setSwapBytes(true);
-  TJpgDec.setCallback(tft_output);
-
   int CityCODE = 0;
   for (int cnum = 5; cnum > 0; cnum--) {
     CityCODE = CityCODE * 100;
