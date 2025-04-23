@@ -245,7 +245,6 @@ void inline initTJpeg() {
 
 void inline autoConfigWifi() {
   wm.setAPCallback([](WiFiManager *_wm) {
-    tft.loadFont(ZoloFont_20);
     tft.println("WiFi Failed!");
     tft.println("Please Connect AP:");
     tft.setTextColor(TFT_GREEN);
@@ -284,7 +283,7 @@ void inline startConfigTime() {
 
 void inline initPixels() {
   pixels.begin();
-  pixels.setBrightness(80);
+  pixels.setBrightness(160);
   pixels.clear();
   pixels.show();
 }
@@ -300,6 +299,8 @@ void inline initDisplay() {
   analogWrite(TFT_BL, 1023 - (brightness * 10));
   tft.setCursor(0, 4);
   tft.setTextColor(TFT_WHITE);
+  tft.loadFont(ZoloFont_20);
+  tft.println("Hello World!!");
 }
 
 void inline loadInitWeather() {
