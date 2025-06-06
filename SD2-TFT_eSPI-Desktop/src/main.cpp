@@ -1,3 +1,4 @@
+#include <FS.h>
 #include "SD2.hpp"
 
 uint64_t ms100ms = 0, ms300ms = 0, ms2s = 0, ms10min = 0;
@@ -17,6 +18,8 @@ void run100msTask() { animationOneFrame(); }
 
 void setup() {
   Serial.begin(115200);
+  EEPROM.begin(1024);
+  loadSavedConfig();
   initDisplay();
   initPixels();
   autoConfigWifi();
@@ -25,10 +28,12 @@ void setup() {
   animationOneFrame();
   loadInitWeather();
   showTimeDate(1);
+  webServerInit();
 }
 
 void loop() {
   auto cur = millis();
+  webServeUpdate();
   if (cur - ms100ms > 100) {
     ms100ms = cur;
     run100msTask();

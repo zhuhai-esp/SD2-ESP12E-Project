@@ -9,7 +9,9 @@
 #include "weatherNum/weatherNum.h"
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
+#include <EEPROM.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
 #include <TFT_eSPI.h>
 #include <TJpg_Decoder.h>
 #include <WiFiManager.h>
@@ -29,12 +31,9 @@
 #define FONT_COLOR_SEC 0xEC1D
 
 const String WEEK_DAYS[7] = {"日", "一", "二", "三", "四", "五", "六"};
-String cityCode = "";
 Adafruit_NeoPixel pixels(NUM_LEDS, PIN_WS2812, NEO_GRB + NEO_KHZ800);
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite clk = TFT_eSprite(&tft);
-uint16_t brightness = 8;
-uint8_t rotation = 0;
 WiFiManager wm;
 char buf[256];
 WiFiClient wificlient;
@@ -53,6 +52,136 @@ int YDay_sign = -1;
 struct tm timeNow;
 const uint8_t *Animate_value;
 uint32_t Animate_size;
+ESP8266WebServer server(80);
+
+int BL_addr = 1;  // 被写入数据的EEPROM地址编号  1亮度
+int Ro_addr = 2;  // 被写入数据的EEPROM地址编号  2 旋转方向
+int CC_addr = 10; // 被写入数据的EEPROM地址编号  10城市
+
+int LCD_Rotation = 0; // LCD屏幕方向
+int LCD_BL_PWM = 50;  // 屏幕亮度0-100，默认50
+String cityCode = "";
+
+void animationOneFrame();
+void loadInitWeather();
+void showTimeDate(uint8_t force);
+void getCityWeater();
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void saveCityCodetoEEP(int *citycode) {
+  for (int cnum = 0; cnum < 5; cnum++) {
+    EEPROM.write(CC_addr + cnum, *citycode % 100);
+    EEPROM.commit();
+    *citycode = *citycode / 100;
+    delay(5);
+  }
+}
+
+void readCityCodefromEEP(int *citycode) {
+  for (int cnum = 5; cnum > 0; cnum--) {
+    *citycode = *citycode * 100;
+    *citycode += EEPROM.read(CC_addr + cnum - 1);
+    delay(5);
+  }
+}
+
+inline String generateHTML() {
+  String html = F("<!DOCTYPE html><html lang='en'>");
+  html += F("<head>");
+  html += F("<meta charset='UTF-8'>");
+  html += F("<title>SD2 Config</title>");
+  html += F("</head>");
+  html += F("<body>");
+  html += F("<h2>SD2 Config</h2>");
+  html += F("<form action='/' method='POST'>");
+  html += F("<p>城市代码：<input type='text' name='web_ccode' value='");
+  html += cityCode;
+  html += F("'></p>");
+  html += F("<p>屏幕亮度：<input type='text' name='web_bl' placeholder='1~100' "
+            "value='");
+  html += LCD_BL_PWM;
+  html += F("'></p>");
+  html += F("<p>屏幕方向：<input type='text' name='web_set_rotation' "
+            "placeholder='0~3' value='");
+  html += LCD_Rotation;
+  html += F("'></p>");
+  html += F("<p>");
+  html += F("<button type='submit' name='save'>提交</button>");
+  html += F("<button type='submit' name='reset'>重置</button>");
+  html += F("</p>");
+  html += F("</form>");
+  html += F("</body>");
+  html += F("</html>");
+  return html;
+}
+
+inline void handleFromPost() {
+  if (server.hasArg("reset")) {
+    server.send(200, "text/html", generateHTML());
+    delay(2000);
+    ESP.reset();
+  } else if (server.hasArg("save")) {
+    int web_cc, web_setro, web_lcdbl;
+    web_cc = server.arg("web_ccode").toInt();
+    web_setro = server.arg("web_set_rotation").toInt();
+    web_lcdbl = server.arg("web_bl").toInt();
+    if (web_cc >= 101000000 && web_cc <= 102000000) {
+      saveCityCodetoEEP(&web_cc);
+      readCityCodefromEEP(&web_cc);
+      cityCode = web_cc;
+      loadInitWeather();
+      showTimeDate(1);
+    }
+    if (web_lcdbl > 0 && web_lcdbl <= 100) {
+      EEPROM.write(BL_addr, web_lcdbl);
+      EEPROM.commit();
+      LCD_BL_PWM = EEPROM.read(BL_addr);
+      analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
+    }
+    EEPROM.write(Ro_addr, web_setro);
+    EEPROM.commit();
+    if (web_setro != LCD_Rotation) {
+      LCD_Rotation = web_setro;
+      tft.setRotation(LCD_Rotation);
+      tft.fillScreen(0x0000);
+      TJpgDec.drawJpg(15, 183, temperature, sizeof(temperature));
+      TJpgDec.drawJpg(15, 213, humidity, sizeof(humidity));
+      showTimeDate(1);
+      getCityWeater();
+    }
+    server.send(200, "text/html", generateHTML());
+  }
+}
+
+void handleConfig() {
+  if (server.method() == HTTP_POST) {
+    handleFromPost();
+  } else {
+    server.send(200, "text/html", generateHTML());
+  }
+}
+
+void inline webServerInit() {
+  server.on("/", handleConfig);
+  server.onNotFound(handleNotFound);
+  server.begin();
+}
+
+void webServeUpdate() { server.handleClient(); }
 
 void inline tempWin() {
   clk.setColorDepth(8);
@@ -288,19 +417,33 @@ void inline initPixels() {
   pixels.show();
 }
 
+inline void loadSavedConfig() {
+  if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
+    LCD_BL_PWM = EEPROM.read(BL_addr);
+  }
+  if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3) {
+    LCD_Rotation = EEPROM.read(Ro_addr);
+  }
+  int CityCODE = 0;
+  readCityCodefromEEP(&CityCODE);
+  if (CityCODE >= 101000000 && CityCODE <= 102000000) {
+    cityCode = CityCODE;
+  }
+}
+
 void inline initDisplay() {
   tft.begin();
   tft.invertDisplay(1);
-  tft.setRotation(rotation);
+  tft.setRotation(LCD_Rotation);
   tft.fillScreen(0x0000);
   pinMode(TFT_BL, OUTPUT);
   analogWriteResolution(10);
   analogWriteFreq(25000);
-  analogWrite(TFT_BL, 1023 - (brightness * 10));
+  analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
   tft.setCursor(0, 4);
   tft.setTextColor(TFT_WHITE);
   tft.loadFont(ZoloFont_20);
-  tft.println("Hello World!!");
+  tft.println("Hello World...");
 }
 
 void inline loadInitWeather() {
