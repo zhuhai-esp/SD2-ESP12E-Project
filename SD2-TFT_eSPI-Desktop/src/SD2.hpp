@@ -56,10 +56,12 @@ ESP8266WebServer server(80);
 
 int BL_addr = 1;  // 被写入数据的EEPROM地址编号  1亮度
 int Ro_addr = 2;  // 被写入数据的EEPROM地址编号  2 旋转方向
+int Pix_addr = 3; // LED亮度 0~255
 int CC_addr = 10; // 被写入数据的EEPROM地址编号  10城市
 
-int LCD_Rotation = 0; // LCD屏幕方向
-int LCD_BL_PWM = 50;  // 屏幕亮度0-100，默认50
+int LCD_Rotation = 0;   // LCD屏幕方向
+int LCD_BL_PWM = 50;    // 屏幕亮度0-100，默认50
+int ledBrightness = 50; // led亮度
 String cityCode = "";
 
 void animationOneFrame();
@@ -99,29 +101,41 @@ void readCityCodefromEEP(int *citycode) {
   }
 }
 
-inline String generateHTML() {
+inline String generateHTML(bool reload = false) {
   String html = F("<!DOCTYPE html><html lang='en'>");
   html += F("<head>");
   html += F("<meta charset='UTF-8'>");
+  html += F("<meta name='viewport' content='width=device-width, "
+            "initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, "
+            "user-scalable=no, viewport-fit=cover'>");
   html += F("<title>SD2 Config</title>");
+  if (reload) {
+    html += F("<script>setTimeout(function(){ window.location.href='/'; }, "
+              "2000);</script>");
+  }
   html += F("</head>");
-  html += F("<body>");
+  html += F("<body style='text-align:center'>");
   html += F("<h2>SD2 Config</h2>");
   html += F("<form action='/' method='POST'>");
-  html += F("<p>城市代码：<input type='text' name='web_ccode' value='");
+  html += F("<p>城市代码：<input type='text' name='web_cityCode' value='");
   html += cityCode;
   html += F("'></p>");
   html += F("<p>屏幕亮度：<input type='text' name='web_bl' placeholder='1~100' "
             "value='");
   html += LCD_BL_PWM;
   html += F("'></p>");
-  html += F("<p>屏幕方向：<input type='text' name='web_set_rotation' "
+  html += F("<p>屏幕方向：<input type='text' name='web_rotation' "
             "placeholder='0~3' value='");
   html += LCD_Rotation;
   html += F("'></p>");
+  html +=
+      F("<p>LED亮度：<input type='text' name='web_ledb' placeholder='0~255' "
+        "value='");
+  html += ledBrightness;
+  html += F("'></p>");
   html += F("<p>");
-  html += F("<button type='submit' name='save'>提交</button>");
-  html += F("<button type='submit' name='reset'>重置</button>");
+  html += F("<button type='submit' name='save'>保存</button>&nbsp");
+  html += F("<button type='submit' name='reset'>重启</button>");
   html += F("</p>");
   html += F("</form>");
   html += F("</body>");
@@ -131,14 +145,20 @@ inline String generateHTML() {
 
 inline void handleFromPost() {
   if (server.hasArg("reset")) {
-    server.send(200, "text/html", generateHTML());
+    server.send(200, "text/html", generateHTML(true));
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 4);
+    tft.loadFont(ZoloFont_20);
+    tft.print("Restarting...");
+    tft.unloadFont();
     delay(2000);
     ESP.reset();
   } else if (server.hasArg("save")) {
-    int web_cc, web_setro, web_lcdbl;
-    web_cc = server.arg("web_ccode").toInt();
-    web_setro = server.arg("web_set_rotation").toInt();
+    int web_cc, web_setro, web_lcdbl, web_ledb;
+    web_cc = server.arg("web_cityCode").toInt();
+    web_setro = server.arg("web_rotation").toInt();
     web_lcdbl = server.arg("web_bl").toInt();
+    web_ledb = server.arg("web_ledb").toInt();
     if (web_cc >= 101000000 && web_cc <= 102000000) {
       saveCityCodetoEEP(&web_cc);
       readCityCodefromEEP(&web_cc);
@@ -152,6 +172,12 @@ inline void handleFromPost() {
       LCD_BL_PWM = EEPROM.read(BL_addr);
       analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
     }
+    if (web_ledb >= 0 && web_ledb <= 255) {
+      EEPROM.write(Pix_addr, web_ledb);
+      EEPROM.commit();
+      ledBrightness = EEPROM.read(Pix_addr);
+      pixels.setBrightness(ledBrightness);
+    }
     EEPROM.write(Ro_addr, web_setro);
     EEPROM.commit();
     if (web_setro != LCD_Rotation) {
@@ -163,7 +189,7 @@ inline void handleFromPost() {
       showTimeDate(1);
       getCityWeater();
     }
-    server.send(200, "text/html", generateHTML());
+    server.send(200, "text/html", generateHTML(true));
   }
 }
 
@@ -412,7 +438,7 @@ void inline startConfigTime() {
 
 void inline initPixels() {
   pixels.begin();
-  pixels.setBrightness(160);
+  pixels.setBrightness(ledBrightness);
   pixels.clear();
   pixels.show();
 }
@@ -420,6 +446,9 @@ void inline initPixels() {
 inline void loadSavedConfig() {
   if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
     LCD_BL_PWM = EEPROM.read(BL_addr);
+  }
+  if (EEPROM.read(Pix_addr) >= 0 && EEPROM.read(Pix_addr) < 255) {
+    ledBrightness = EEPROM.read(Pix_addr);
   }
   if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3) {
     LCD_Rotation = EEPROM.read(Ro_addr);
