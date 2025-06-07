@@ -60,7 +60,7 @@ int Pix_addr = 3; // LED亮度 0~255
 int CC_addr = 10; // 被写入数据的EEPROM地址编号  10城市
 
 int LCD_Rotation = 0;   // LCD屏幕方向
-int LCD_BL_PWM = 50;    // 屏幕亮度0-100，默认50
+int lcdBL = 50;         // 屏幕亮度0-100，默认50
 int ledBrightness = 50; // led亮度
 String cityCode = "";
 
@@ -120,9 +120,9 @@ inline String generateHTML(bool reload = false) {
   html += F("<p>城市代码：<input type='text' name='web_cityCode' value='");
   html += cityCode;
   html += F("'></p>");
-  html += F("<p>屏幕亮度：<input type='text' name='web_bl' placeholder='1~100' "
+  html += F("<p>屏幕亮度：<input type='text' name='web_bl' placeholder='0~255' "
             "value='");
-  html += LCD_BL_PWM;
+  html += lcdBL;
   html += F("'></p>");
   html += F("<p>屏幕方向：<input type='text' name='web_rotation' "
             "placeholder='0~3' value='");
@@ -166,11 +166,11 @@ inline void handleFromPost() {
       loadInitWeather();
       showTimeDate(1);
     }
-    if (web_lcdbl > 0 && web_lcdbl <= 100) {
+    if (web_lcdbl >= 0 && web_lcdbl <= 255) {
       EEPROM.write(BL_addr, web_lcdbl);
       EEPROM.commit();
-      LCD_BL_PWM = EEPROM.read(BL_addr);
-      analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
+      lcdBL = EEPROM.read(BL_addr);
+      analogWrite(TFT_BL, 255 - lcdBL);
     }
     if (web_ledb >= 0 && web_ledb <= 255) {
       EEPROM.write(Pix_addr, web_ledb);
@@ -444,10 +444,10 @@ void inline initPixels() {
 }
 
 inline void loadSavedConfig() {
-  if (EEPROM.read(BL_addr) > 0 && EEPROM.read(BL_addr) < 100) {
-    LCD_BL_PWM = EEPROM.read(BL_addr);
+  if (EEPROM.read(BL_addr) >= 0 && EEPROM.read(BL_addr) <= 255) {
+    lcdBL = EEPROM.read(BL_addr);
   }
-  if (EEPROM.read(Pix_addr) >= 0 && EEPROM.read(Pix_addr) < 255) {
+  if (EEPROM.read(Pix_addr) >= 0 && EEPROM.read(Pix_addr) <= 255) {
     ledBrightness = EEPROM.read(Pix_addr);
   }
   if (EEPROM.read(Ro_addr) >= 0 && EEPROM.read(Ro_addr) <= 3) {
@@ -466,9 +466,9 @@ void inline initDisplay() {
   tft.setRotation(LCD_Rotation);
   tft.fillScreen(0x0000);
   pinMode(TFT_BL, OUTPUT);
-  analogWriteResolution(10);
+  analogWriteResolution(8);
   analogWriteFreq(25000);
-  analogWrite(TFT_BL, 1023 - (LCD_BL_PWM * 10));
+  analogWrite(TFT_BL, 255 - lcdBL);
   tft.setCursor(0, 4);
   tft.setTextColor(TFT_WHITE);
   tft.loadFont(ZoloFont_20);
